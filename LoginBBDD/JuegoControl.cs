@@ -213,18 +213,49 @@ namespace LoginBBDD
                 return;
             }
 
+            // Confirmación antes de eliminar
+            DialogResult resultado = MessageBox.Show($"¿Está seguro de que desea eliminar el juego '{juegoSeleccionadoTitulo}' y todas sus referencias?",
+                "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (resultado == DialogResult.No)
+                return;
+
             using (MySqlConnection conn = new MySqlConnection(connectionString))
             {
-                conn.Open();
-                string query = "DELETE FROM catalogo WHERE titulo=@titulo";
-
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@titulo", juegoSeleccionadoTitulo);
-                    cmd.ExecuteNonQuery();
-                    MessageBox.Show("Juego eliminado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LimpiarCampos();
-                    CargarListaJuegos();
+                    conn.Open();
+
+                    // Eliminar primero las referencias en "usuarios-videojuegos"
+                    string queryEliminarReferencias = "DELETE FROM `usuarios-videojuegos` WHERE idJuego = @titulo";
+                    using (MySqlCommand cmdReferencias = new MySqlCommand(queryEliminarReferencias, conn))
+                    {
+                        cmdReferencias.Parameters.AddWithValue("@titulo", juegoSeleccionadoTitulo);
+                        cmdReferencias.ExecuteNonQuery();
+                    }
+
+                    // Eliminar el juego de la tabla "catalogo"
+                    string queryEliminarJuego = "DELETE FROM catalogo WHERE titulo = @titulo";
+                    using (MySqlCommand cmdJuego = new MySqlCommand(queryEliminarJuego, conn))
+                    {
+                        cmdJuego.Parameters.AddWithValue("@titulo", juegoSeleccionadoTitulo);
+                        int filasAfectadas = cmdJuego.ExecuteNonQuery();
+
+                        if (filasAfectadas > 0)
+                        {
+                            MessageBox.Show("Juego eliminado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            LimpiarCampos();
+                            CargarListaJuegos();
+                        }
+                        else
+                        {
+                            MessageBox.Show("No se encontró el juego en la base de datos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al eliminar el juego: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }

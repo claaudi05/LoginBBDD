@@ -166,28 +166,27 @@ namespace LoginBBDD
             nuevoCerarSesion.Show();
             this.Close();
         }
-
         private void btnBorrarUsuario_Click(object sender, EventArgs e)
         {
-            //Obtener el usuario del TextBox
+            // Obtener el usuario del TextBox
             string usuario = textBoxUsuario.Text;
 
-            //Validar que hay un usuario en el TextBox
+            // Validar que hay un usuario en el TextBox
             if (string.IsNullOrWhiteSpace(usuario))
             {
                 MessageBox.Show("Por favor, selecciona un usuario del ListBox.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            //Mostramos una ventana de confirmación
-            DialogResult confirmacion = MessageBox.Show($"¿Estás seguro de que deseas eliminar al usuario '{usuario}'?", "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            // Mostramos una ventana de confirmación
+            DialogResult confirmacion = MessageBox.Show($"¿Estás seguro de que deseas eliminar al usuario '{usuario}'? Se eliminarán también sus datos en 'usuarios-videojuegos'.",
+                "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-            //Si se confirma entonces se procede con la eliminación
+            // Si se confirma entonces se procede con la eliminación
             if (confirmacion == DialogResult.Yes)
             {
-                //Conexión con la base de datos
+                // Conexión con la base de datos
                 string connectionString = "Server=localhost;Port=3306;Database=loginsql;Uid=root;Pwd=1234;";
-                string consulta = "DELETE FROM `usuarios` WHERE nombre = @usuario;";
 
                 using (MySqlConnection conn = new MySqlConnection(connectionString))
                 {
@@ -195,23 +194,32 @@ namespace LoginBBDD
                     {
                         conn.Open();
 
-                        using (MySqlCommand cmd = new MySqlCommand(consulta, conn))
+                        // Eliminar primero las referencias en "usuarios-videojuegos"
+                        string eliminarReferencias = "DELETE FROM `usuarios-videojuegos` WHERE idUsuario = @usuario;";
+                        using (MySqlCommand cmd = new MySqlCommand(eliminarReferencias, conn))
                         {
-                            //Agregamos el parámetro para evitar inyecciones
                             cmd.Parameters.AddWithValue("@usuario", usuario);
+                            cmd.ExecuteNonQuery();
+                        }
 
-                            //Ejecutamos la consulta
+                        // Ahora eliminar al usuario de la tabla "usuarios"
+                        string eliminarUsuario = "DELETE FROM `usuarios` WHERE nombre = @usuario;";
+                        using (MySqlCommand cmd = new MySqlCommand(eliminarUsuario, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@usuario", usuario);
                             int filasAfectadas = cmd.ExecuteNonQuery();
 
                             if (filasAfectadas > 0)
                             {
-                                MessageBox.Show("Usuario eliminado correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show("Usuario eliminado correctamente, incluyendo sus referencias en 'usuarios-videojuegos'.",
+                                    "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                                //Limpiamos los textbox y actualizamos el listBox
+                                // Limpiamos los textbox y actualizamos el ListBox
                                 textBoxUsuario.Clear();
                                 textBoxPassw.Clear();
                                 chbAdmin.Checked = false;
-                                ConectarConBBDD();
+                                checkBox1.Checked = false;
+                                ConectarConBBDD(); // Recargar la lista de usuarios
                             }
                             else
                             {
