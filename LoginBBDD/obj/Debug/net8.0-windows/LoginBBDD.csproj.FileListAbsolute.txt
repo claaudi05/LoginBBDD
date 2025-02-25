@@ -117,3 +117,4 @@ C:\Users\gccla\OneDrive\Escritorio\LoginBBDD\LoginBBDD\LoginBBDD\obj\Debug\net8.
 C:\Users\gccla\OneDrive\Escritorio\LoginBBDD\LoginBBDD\LoginBBDD\obj\Debug\net8.0-windows\LoginBBDD.genruntimeconfig.cache
 C:\Users\gccla\OneDrive\Escritorio\LoginBBDD\LoginBBDD\LoginBBDD\obj\Debug\net8.0-windows\ref\LoginBBDD.dll
 C:\Users\gccla\OneDrive\Escritorio\LoginBBDD\LoginBBDD\LoginBBDD\obj\Debug\net8.0-windows\LoginBBDD.MisJuegos.resources
+C:\Users\gccla\OneDrive\Escritorio\LoginBBDD\LoginBBDD\LoginBBDD\obj\Debug\net8.0-windows\LoginBBDD.sourcelink.json

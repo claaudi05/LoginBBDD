@@ -43,7 +43,7 @@ namespace LoginBBDD
                     conn.Open();
 
                     string query = @"
-                    SELECT c.titulo, c.rutaImagen 
+                    SELECT c.titulo, c.rutaImagen, c.descripcion
                     FROM catalogo c
                     INNER JOIN `usuarios-videojuegos` uv ON c.titulo = uv.idJuego
                     INNER JOIN usuarios u ON uv.idUsuario = u.nombre
@@ -60,10 +60,11 @@ namespace LoginBBDD
                             while (reader.Read())
                             {
                                 string titulo = reader["titulo"].ToString();
+                                string descripcion = reader["descripcion"].ToString();
                                 byte[] imgBytes = reader["rutaImagen"] as byte[];
                                 Image imagenJuego = ConvertirBlobAImagen(imgBytes);
 
-                                AgregarJuegoALista(titulo, imagenJuego);
+                                AgregarJuegoALista(titulo,descripcion, imagenJuego);
                             }
                         }
                     }
@@ -86,11 +87,11 @@ namespace LoginBBDD
             }
         }
 
-        private void AgregarJuegoALista(string titulo, Image imagen)
+        private void AgregarJuegoALista(string titulo,string descripcion, Image imagen)
         {
             Panel juegoPanel = new Panel
             {
-                Size = new Size(200, 250),
+                Size = new Size(200, 300),
                 BorderStyle = BorderStyle.FixedSingle
             };
 
@@ -111,8 +112,18 @@ namespace LoginBBDD
                 Location = new Point(10, 200)
             };
 
+            Label lblDescripcion = new Label
+            {
+                Text = descripcion,
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Size = new Size(180, 30),
+                Location = new Point(10, 250)
+            };
+
             juegoPanel.Controls.Add(pb);
             juegoPanel.Controls.Add(lblTitulo);
+            juegoPanel.Controls.Add (lblDescripcion);
 
             flowPanelJuegos.Controls.Add(juegoPanel);
         }
